@@ -25,29 +25,40 @@ class Barangmasuk extends CI_Controller
         $this->form_validation->set_rules('barang_id', 'Barang', 'required');
         $this->form_validation->set_rules('jumlah_masuk', 'Jumlah Masuk', 'required|trim|numeric|greater_than[0]');
     }
+
     public function add()
     {
         $this->_validasi();
         if ($this->form_validation->run() == false) {
             $data['title'] = "Barang Masuk";
             $data['barang'] = $this->admin->getBarang();
-
+    
             $kode = 'T-BM-' . date('ymd');
             $kode_terakhir = $this->admin->getMax('barang_masuk', 'id_barang_masuk', $kode);
             $kode_tambah = substr($kode_terakhir, -5, 5);
             $kode_tambah++;
             $number = str_pad($kode_tambah, 5, '0', STR_PAD_LEFT);
             $data['id_barang_masuk'] = $kode . $number;
-
+    
             $this->template->load('templates/dashboard', 'barang_masuk/add', $data);
         } else {
             $input = $this->input->post(null, true);
-
+    
+            // Ambil harga satuan dari database
+            $harga_satuan = $this->admin->getHargaSatuanBarang($input['barang_id']);
+    
+            // Hitung total harga
+            $total_harga = $harga_satuan * $input['jumlah_masuk'];
+    
+            // Tambahkan harga_satuan dan total_harga ke input
+            $input['harga_satuan'] = $harga_satuan;
+            $input['total_harga'] = $total_harga;
+    
             $insert = $this->admin->insert('barang_masuk', $input);
-
+    
             if ($insert) {
                 $this->updateStokBarang($input['barang_id'], $input['jumlah_masuk']);
-
+    
                 set_pesan('Data berhasil disimpan.');
                 redirect('barangmasuk');
             } else {
@@ -75,5 +86,15 @@ class Barangmasuk extends CI_Controller
             set_pesan('Data gagal dihapus.', false);
         }
         redirect('barangmasuk');
+    }
+
+    public function get_harga_satuan($barang_id)
+    {
+        if (!$barang_id) {
+            show_404();
+        }
+
+        $harga = $this->admin->getHargaSatuanBarang($barang_id);
+        echo json_encode(['harga_satuan' => $harga]);
     }
 }

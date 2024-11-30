@@ -73,9 +73,21 @@
                     </div>
                 </div>
                 <div class="row form-group">
+                    <label class="col-md-4 text-md-right" for="harga_satuan">Harga Satuan</label>
+                    <div class="col-md-5">
+                        <input readonly="readonly" id="harga_satuan" type="number" class="form-control">
+                    </div>
+                </div>
+                <div class="row form-group">
                     <label class="col-md-4 text-md-right" for="total_stok">Total Stok</label>
                     <div class="col-md-5">
                         <input readonly="readonly" id="total_stok" type="number" class="form-control">
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <label class="col-md-4 text-md-right" for="total_harga_barang">Total Harga</label>
+                    <div class="col-md-5">
+                        <input readonly="readonly" id="total_harga_barang" type="number" class="form-control">
                     </div>
                 </div>
                 <div class="row form-group">
@@ -89,3 +101,50 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const barangSelect = document.getElementById('barang_id');
+        const hargaSatuanInput = document.getElementById('harga_satuan');
+        const jumlahMasukInput = document.getElementById('jumlah_masuk');
+        const totalHargaInput = document.getElementById('total_harga_barang');
+
+        barangSelect.addEventListener('change', function() {
+            const barangId = this.value;
+
+            console.log('Barang ID:', barangId); // Log Barang ID
+
+            fetch('<?= base_url("barangmasuk/get_harga_satuan/") ?>' + barangId)
+                .then(response => {
+                    console.log('Fetch Response:', response); // Log respons dari fetch
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data dari server:', data); // Log data dari server
+                    if (data.harga_satuan) {
+                        hargaSatuanInput.value = data.harga_satuan;
+                        hitungTotalHarga();
+                    } else {
+                        hargaSatuanInput.value = 0;
+                        console.error('Harga satuan tidak ditemukan');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        jumlahMasukInput.addEventListener('input', function() {
+            hitungTotalHarga();
+        });
+
+        function hitungTotalHarga() {
+            const hargaSatuan = parseFloat(hargaSatuanInput.value) || 0;
+            const jumlahMasuk = parseFloat(jumlahMasukInput.value) || 0;
+            const total = hargaSatuan * jumlahMasuk;
+
+            console.log('Menghitung Total Harga:', total); // Log total harga
+            totalHargaInput.value = total.toFixed(2);
+        }
+    });
+</script>

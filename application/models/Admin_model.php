@@ -70,16 +70,14 @@ class Admin_model extends CI_Model
         return $query->result_array();
     }
 
-
     public function getBarangMasukWithDetails()
     {
-        // Join barang_masuk with barang table to get stock and price details
-        $this->db->select('barang_masuk.*, barang.nama_barang, barang.stok, barang.harga_satuan');
-        $this->db->from('barang_masuk');
-        $this->db->join('barang', 'barang.id_barang = barang_masuk.barang_id');
-        return $this->db->get()->result_array();
-    }
-
+        $this->db->select('bm.id_barang_masuk, b.nama_barang, b.stok, bm.harga_satuan, bm.jumlah_masuk, (bm.harga_satuan * bm.jumlah_masuk) as total_harga, bm.tanggal_masuk');
+        $this->db->from('barang_masuk bm');
+        $this->db->join('barang b', 'bm.barang_id = b.id_barang');
+        $query = $this->db->get();
+        return $query->result_array();
+    }    
 
     public function getBarangMasuk($limit = null, $id_barang = null, $range = null)
     {
@@ -146,7 +144,7 @@ class Admin_model extends CI_Model
         $query = $this->db->get($table);
         return $query->row()->$column;
     }
- 
+
     public function min($table, $column, $limit)
     {
         $this->db->select_min($column);
@@ -202,7 +200,21 @@ class Admin_model extends CI_Model
         $query = $this->db->get();
         return $query->result_array(); // Pastikan ini mengembalikan array
     }
-
-
-
+    public function get_barang_masuk()
+    {
+        $this->db->select('id_barang_masuk, nama_barang, stok, harga_satuan, jumlah_masuk, (harga_satuan * jumlah_masuk) AS total_harga_barang, tanggal_masuk');
+        $query = $this->db->get('barang_masuk');
+        return $query->result_array();
+    }
+    public function getHargaSatuanBarang($barang_id)
+    {
+        $this->db->select('harga_satuan');
+        $this->db->from('barang');
+        $this->db->where('id_barang', $barang_id);
+        $query = $this->db->get();
+        if ($query->num_rows() > 0) {
+            return $query->row()->harga_satuan;
+        }
+        return 0;
+    }
 }

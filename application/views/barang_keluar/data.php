@@ -26,12 +26,12 @@
                     <th>No.</th>
                     <th>ID Barang Keluar</th>
                     <th>Nama Barang</th>
+                    <th>Tanggal Keluar</th>
                     <th>Nama Pembeli</th>
-                    <th>Type/Role</th>
+                    <th>Type</th>
                     <th>Jumlah Keluar</th>
                     <th>Harga Satuan</th>
                     <th>Total Harga</th>
-                    <th>Stok</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -42,12 +42,12 @@
                             <td><?= $no++; ?></td>
                             <td><?= $bk['id_barang_keluar']; ?></td>
                             <td><?= $bk['nama_barang']; ?></td>
+                            <td><?= date('d-m-Y', strtotime($bk['tanggal_keluar'])); ?></td>
                             <td><?= $bk['nama_distributor']; ?></td>
                             <td><?= $bk['type']; ?></td>
                             <td><?= $bk['jumlah_keluar']; ?></td>
                             <td><?= number_format($bk['harga_satuan'], 0, ',', '.'); ?></td>
                             <td><?= number_format($bk['total_harga'], 0, ',', '.'); ?></td>
-                            <td><?= $bk['stok']; ?></td>
                             <td>
                                 <a href="<?= base_url('barangkeluar/delete/' . $bk['id_barang_keluar']) ?>" class="btn btn-danger btn-circle btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?');"><i class="fa fa-trash"></i></a>
                             </td>

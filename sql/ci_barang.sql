@@ -94,7 +94,8 @@ CREATE TABLE `barang_masuk` (
   `id_distributor` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
---
+ALTER TABLE barang_masuk ADD COLUMN total_harga DECIMAL(15,2);
+
 -- Dumping data untuk tabel `barang_masuk`
 --
 
