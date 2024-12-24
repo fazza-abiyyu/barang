@@ -35,7 +35,6 @@ class Barang extends CI_Controller
             $data['jenis'] = $this->admin->get('jenis');
             $data['satuan'] = $this->admin->get('satuan');
 
-            // Mengenerate ID Barang
             $kode_terakhir = $this->admin->getMax('barang', 'id_barang', 'B');
             $kode_tambah = substr($kode_terakhir, -6, 6);
             $kode_tambah++;

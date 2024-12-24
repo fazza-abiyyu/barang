@@ -26,7 +26,6 @@ class Barangkeluar extends CI_Controller
         $this->form_validation->set_rules('jumlah_keluar', 'Jumlah Keluar', 'required|trim|numeric|greater_than[0]');
         $this->form_validation->set_rules('pembeli_id', 'Pembeli', 'required');
     }
-
     public function add()
     {
         $this->_validasi();
@@ -70,7 +69,13 @@ class Barangkeluar extends CI_Controller
             $input['harga_satuan'] = $harga_satuan;
             $input['total_harga'] = $harga_satuan * $jumlah_keluar;
 
-            $input['pembeli_id'] = $this->input->post('pembeli_id', true);
+            $input['pembeli_id'] = $input['pembeli_id'];
+
+            if (!isset($input['satuan_id'])) {
+                set_pesan('Satuan ID tidak ditemukan!', false);
+                redirect('barangkeluar/add');
+            }
+            $input['satuan_id'] = $input['satuan_id'];
 
             $login_session = $this->session->userdata('login_session');
             if (!isset($login_session['user'])) {
@@ -93,6 +98,7 @@ class Barangkeluar extends CI_Controller
         }
     }
 
+
     public function delete($getId = NULL)
     {
         $id = encode_php_tags($getId);
@@ -103,10 +109,34 @@ class Barangkeluar extends CI_Controller
         }
         redirect('barangkeluar');
     }
-
     public function getHargaSatuan($barang_id)
     {
-        $barang = $this->admin->get('barang', ['id_barang' => $barang_id]);
-        echo json_encode(['harga_satuan' => $barang['harga_satuan'], 'stok' => $barang['stok']]);
+        $barang = $this->db->select('barang.*, satuan.id_satuan, satuan.nama_satuan')
+            ->from('barang')
+            ->join('satuan', 'satuan.id_satuan = barang.satuan_id')
+            ->where('id_barang', $barang_id)
+            ->get()
+            ->row_array();
+
+        if ($barang) {
+            $data = [
+                'harga_satuan' => $barang['harga_satuan'],
+                'stok' => $barang['stok'],
+                'satuan_id' => $barang['id_satuan'],
+                'nama_satuan' => $barang['nama_satuan']
+            ];
+        } else {
+            $data = [
+                'harga_satuan' => 0,
+                'stok' => 0,
+                'satuan_id' => '',
+                'nama_satuan' => ''
+            ];
+        }
+
+        echo json_encode($data);
     }
+
+
+
 }

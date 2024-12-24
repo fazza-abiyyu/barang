@@ -77,8 +77,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  *  Load the global functions
  * ------------------------------------------------------
  */
-	require_once(BASEPATH.'core/Common.php');
 
+
+	require_once(BASEPATH.'core/Common.php');
+	var_dump(BASEPATH);
+	die();
 
 /*
  * ------------------------------------------------------

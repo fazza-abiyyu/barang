@@ -23,7 +23,6 @@ class Supplier extends CI_Controller
 
     private function _validasi()
     {
-        // Menambahkan validasi untuk form input
         $this->form_validation->set_rules('nama_distributor', 'Nama Distributor', 'required|trim');
         $this->form_validation->set_rules('no_telp', 'Nomor Telepon', 'required|trim|numeric');
         $this->form_validation->set_rules('alamat', 'Alamat', 'required|trim');

@@ -33,7 +33,8 @@
                 <div class="row form-group">
                     <label class="col-md-4 text-md-right" for="tanggal_masuk">Tanggal Masuk</label>
                     <div class="col-md-4">
-                        <input value="<?= set_value('tanggal_masuk', date('Y-m-d')); ?>" name="tanggal_masuk" id="tanggal_masuk" type="text" class="form-control date" placeholder="Tanggal Masuk...">
+                        <input value="<?= set_value('tanggal_masuk', date('Y-m-d')); ?>" name="tanggal_masuk"
+                            id="tanggal_masuk" type="text" class="form-control date" placeholder="Tanggal Masuk...">
                         <?= form_error('tanggal_masuk', '<small class="text-danger">', '</small>'); ?>
                     </div>
                 </div>
@@ -43,12 +44,16 @@
                         <div class="input-group">
                             <select name="barang_id" id="barang_id" class="custom-select">
                                 <option value="" selected disabled>Pilih Barang</option>
-                                <?php foreach ($barang as $b) : ?>
-                                    <option <?= $this->uri->segment(3) == $b['id_barang'] ? 'selected' : '';  ?> <?= set_select('barang_id', $b['id_barang']) ?> value="<?= $b['id_barang'] ?>"><?= $b['id_barang'] . ' | ' . $b['nama_barang'] ?></option>
+                                <?php foreach ($barang as $b): ?>
+                                    <option <?= $this->uri->segment(3) == $b['id_barang'] ? 'selected' : ''; ?>
+                                        <?= set_select('barang_id', $b['id_barang']) ?> value="<?= $b['id_barang'] ?>">
+                                        <?= $b['id_barang'] . ' | ' . $b['nama_barang'] ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                             <div class="input-group-append">
-                                <a class="btn btn-primary" href="<?= base_url('barang/add'); ?>"><i class="fa fa-plus"></i></a>
+                                <a class="btn btn-primary" href="<?= base_url('barang/add'); ?>"><i
+                                        class="fa fa-plus"></i></a>
                             </div>
                         </div>
                         <?= form_error('barang_id', '<small class="text-danger">', '</small>'); ?>
@@ -64,9 +69,11 @@
                     <label class="col-md-4 text-md-right" for="jumlah_masuk">Jumlah Masuk</label>
                     <div class="col-md-5">
                         <div class="input-group">
-                            <input value="<?= set_value('jumlah_masuk'); ?>" name="jumlah_masuk" id="jumlah_masuk" type="number" class="form-control" placeholder="Jumlah Masuk...">
+                            <input value="<?= set_value('jumlah_masuk'); ?>" name="jumlah_masuk" id="jumlah_masuk"
+                                type="number" class="form-control" placeholder="Jumlah Masuk...">
                             <div class="input-group-append">
                                 <span class="input-group-text" id="satuan">Satuan</span>
+                                <input type="hidden" id="satuan_id" name="satuan_id">
                             </div>
                         </div>
                         <?= form_error('jumlah_masuk', '<small class="text-danger">', '</small>'); ?>
@@ -101,40 +108,58 @@
         </div>
     </div>
 </div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const barangSelect = document.getElementById('barang_id');
         const hargaSatuanInput = document.getElementById('harga_satuan');
         const jumlahMasukInput = document.getElementById('jumlah_masuk');
         const totalHargaInput = document.getElementById('total_harga_barang');
+        const satuanSpan = document.getElementById('satuan');
+        const satuanIdInput = document.getElementById('satuan_id');
+        const stokInput = document.getElementById('stok');
 
-        barangSelect.addEventListener('change', function() {
+        barangSelect.addEventListener('change', function () {
             const barangId = this.value;
-
-            console.log('Barang ID:', barangId); // Log Barang ID
+            if (!barangId) return;
 
             fetch('<?= base_url("barangmasuk/get_harga_satuan/") ?>' + barangId)
-                .then(response => {
-                    console.log('Fetch Response:', response); // Log respons dari fetch
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Data dari server:', data); // Log data dari server
-                    if (data.harga_satuan) {
+                    console.log('Data yang diterima:', data);
+
+                    if (data.harga_satuan && data.satuan_id) {
                         hargaSatuanInput.value = data.harga_satuan;
+                        satuanSpan.textContent = data.nama_satuan || 'Satuan';
+                        satuanIdInput.value = data.satuan_id;
+                        stokInput.value = data.stok || 0;
                         hitungTotalHarga();
                     } else {
                         hargaSatuanInput.value = 0;
-                        console.error('Harga satuan tidak ditemukan');
+                        satuanSpan.textContent = 'Satuan';
+                        satuanIdInput.value = '';
+                        stokInput.value = 0;
+                        console.error('Data tidak lengkap:', data);
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    hargaSatuanInput.value = 0;
+                    satuanSpan.textContent = 'Satuan';
+                    satuanIdInput.value = '';
+                    stokInput.value = 0;
+                });
         });
 
-        jumlahMasukInput.addEventListener('input', function() {
+        document.querySelector('form').addEventListener('submit', function (event) {
+            if (!satuanIdInput.value || satuanIdInput.value === 'undefined') {
+                event.preventDefault();
+                alert('Silakan pilih barang terlebih dahulu!');
+                return false;
+            }
+        });
+
+        jumlahMasukInput.addEventListener('input', function () {
             hitungTotalHarga();
         });
 
@@ -142,9 +167,8 @@
             const hargaSatuan = parseFloat(hargaSatuanInput.value) || 0;
             const jumlahMasuk = parseFloat(jumlahMasukInput.value) || 0;
             const total = hargaSatuan * jumlahMasuk;
-
-            console.log('Menghitung Total Harga:', total); // Log total harga
             totalHargaInput.value = total.toFixed(2);
         }
     });
+
 </script>

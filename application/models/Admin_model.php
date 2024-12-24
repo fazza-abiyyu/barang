@@ -17,14 +17,24 @@ class Admin_model extends CI_Model
         return $this->db->update($table, $data);
     }
 
-    public function getBarangKeluar()
+    public function getBarangMasukWithDetails()
     {
-        $this->db->select('barang_keluar.*, barang.nama_barang, barang.stok, distributor.nama_distributor, distributor.type');
-        $this->db->from('barang_keluar');
-        $this->db->join('barang', 'barang_keluar.barang_id = barang.id_barang', 'left');
-        $this->db->join('distributor', 'barang_keluar.pembeli_id = distributor.id_distributor', 'left');
-        return $this->db->get()->result_array();
+        $this->db->select('bm.id_barang_masuk, b.nama_barang, bm.harga_satuan, bm.jumlah_masuk, (bm.harga_satuan * bm.jumlah_masuk) as total_harga, bm.tanggal_masuk');
+        $this->db->from('barang_masuk bm');
+        $this->db->join('barang b', 'bm.barang_id = b.id_barang');
+        $this->db->order_by('bm.tanggal_masuk', 'DESC');
+        $query = $this->db->get();
+        return $query->result_array();
     }
+    public function getBarangKeluar()
+{
+    $this->db->select('barang_keluar.*, barang.nama_barang, barang.stok, distributor.nama_distributor, distributor.type');
+    $this->db->from('barang_keluar');
+    $this->db->join('barang', 'barang_keluar.barang_id = barang.id_barang', 'left');
+    $this->db->join('distributor', 'barang_keluar.pembeli_id = distributor.id_distributor', 'left');
+    $this->db->order_by('barang_keluar.tanggal_keluar', 'DESC');
+    return $this->db->get()->result_array();
+}
 
 
     public function update($table, $pk, $id, $data)
@@ -32,6 +42,7 @@ class Admin_model extends CI_Model
         $this->db->where($pk, $id);
         return $this->db->update($table, $data);
     }
+
 
 
     public function insert($table, $data, $batch = false)
@@ -59,7 +70,7 @@ class Admin_model extends CI_Model
     {
         return $this->db->get('distributor')->result_array();
     }
-    // Model Admin_model
+
     public function getBarang()
     {
         $this->db->select('barang.id_barang, barang.nama_barang, jenis.nama_jenis, barang.stok, satuan.nama_satuan, barang.harga_satuan');
@@ -70,20 +81,12 @@ class Admin_model extends CI_Model
         return $query->result_array();
     }
 
-    public function getBarangMasukWithDetails()
-    {
-        $this->db->select('bm.id_barang_masuk, b.nama_barang, b.stok, bm.harga_satuan, bm.jumlah_masuk, (bm.harga_satuan * bm.jumlah_masuk) as total_harga, bm.tanggal_masuk');
-        $this->db->from('barang_masuk bm');
-        $this->db->join('barang b', 'bm.barang_id = b.id_barang');
-        $query = $this->db->get();
-        return $query->result_array();
-    }    
 
     public function getBarangMasuk($limit = null, $id_barang = null, $range = null)
     {
         $this->db->select('*');
         $this->db->join('user u', 'bm.user_id = u.id_user');
-        $this->db->join('distributor sp', 'bm.id_distributor = sp.id_distributor');  // Ganti supplier_id ke id_distributor
+        $this->db->join('distributor sp', 'bm.id_distributor = sp.id_distributor');
         $this->db->join('barang b', 'bm.barang_id = b.id_barang');
         $this->db->join('satuan s', 'b.satuan_id = s.id_satuan');
         if ($limit != null) {
@@ -109,7 +112,7 @@ class Admin_model extends CI_Model
         $barang = array_filter($barang, function ($b) use ($barang_id) {
             return $b['id_barang'] == $barang_id;
         });
-        $barang = reset($barang);  // Ambil barang yang sesuai
+        $barang = reset($barang);
 
         if ($barang) {
             $stok_sekarang = $barang['stok'];
@@ -123,6 +126,8 @@ class Admin_model extends CI_Model
         return false;
     }
 
+
+
     public function getMax($table, $column, $prefix)
     {
         $this->db->select_max($column, 'max');
@@ -135,7 +140,7 @@ class Admin_model extends CI_Model
 
     public function count($table)
     {
-        return $this->db->count_all($table); // Pastikan 'distributor' dipanggil jika perlu
+        return $this->db->count_all($table);
     }
 
     public function sum($table, $column)
@@ -191,14 +196,13 @@ class Admin_model extends CI_Model
 
     public function getLastBarangMasuk()
     {
-        // Contoh query untuk mendapatkan 5 transaksi terakhir barang masuk
         $this->db->select('tanggal_masuk, nama_barang, jumlah_masuk');
         $this->db->from('barang_masuk');
         $this->db->join('barang', 'barang_masuk.barang_id = barang.id_barang');
         $this->db->order_by('tanggal_masuk', 'DESC');
         $this->db->limit(5);
         $query = $this->db->get();
-        return $query->result_array(); // Pastikan ini mengembalikan array
+        return $query->result_array();
     }
     public function get_barang_masuk()
     {
@@ -217,4 +221,11 @@ class Admin_model extends CI_Model
         }
         return 0;
     }
+    public function getAllSatuan()
+    {
+        return $this->db->get('satuan')->result_array();
+    }
+
+
+
 }

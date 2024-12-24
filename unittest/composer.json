@@ -1,0 +1,20 @@
+{
+    "name": "bertigacelaloe/unittest",
+    "require-dev": {
+        "composer": "^2.8",
+        "mikey179/vfsstream": "^1.6",
+        "phpunit/phpunit": "9.0",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src/",
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "fazza"
+        }
+    ]
+}
